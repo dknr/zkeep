@@ -1,0 +1,31 @@
+#!/sbin/openrc-run
+
+# /etc/init.d/zkeepd - OpenRC init script for zkeep daemon
+
+name="zkeepd"
+description="ZFS snapshot management daemon"
+command="/usr/local/bin/zkeepd"
+pidfile="/var/run/${name}.pid"
+command_background="yes"
+
+depend() {
+    need localmount
+}
+
+start_pre() {
+    # Ensure run directory exists
+    mkdir -p /var/run
+    # Remove existing FIFO if present
+    if [ -e /var/run/zkeep.sock ]; then
+        rm -f /var/run/zkeep.sock
+    fi
+}
+
+start_stop_daemon_args() {
+    --pidfile ${pidfile}
+}
+
+stop_post() {
+    # Clean up FIFO on shutdown
+    rm -f /var/run/zkeep.sock
+}
